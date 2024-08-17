@@ -7,6 +7,8 @@ import {
   useWallet,
 } from "@aptos-labs/wallet-adapter-react";
 
+
+
 const aptosConfig = new AptosConfig({ network: Network.TESTNET });
 export const aptos = new Aptos(aptosConfig);
 
@@ -25,10 +27,46 @@ function App() {
     const value = event.target.value;
     setNewTask(value);
   };
+  function isValidAptosAddress(address) {
+    // Basic check for hex string format and length
+    const hexRegex = /^0x[0-9a-fA-F]{64}$/;
+    return hexRegex.test(address);
+  }
+  const onTaskDeleted = async (taskId) => {
+    if (!account) return;
+    setTransactionInProgress(true);
+  
+    const transaction = {
+      data: {
+        function: `${moduleAddress}::todolist::delete_task`,
+        functionArguments: [taskId]
+      }
+    };
+  
+    try {
+      // sign and submit transaction to chain
+      const response = await signAndSubmitTransaction(transaction);
+      // wait for transaction
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+  
+      // filter out the deleted task from the local state
+      const updatedTasks = tasks.filter(task => task.task_id !== taskId);
+      setTasks(updatedTasks);
+    } catch (error) {
+      console.log("error", error);
+    } finally {
+      setTransactionInProgress(false);
+    }
+  };
 
   const onTaskAdded = async () => {
     // check for connected account
     if (!account) return;
+    if (!isValidAptosAddress(newTask)) {
+        alert("Invalid wallet address");
+        setNewTask("");
+        return;
+    }
     setTransactionInProgress(true);
     const transaction = {
       data: {
@@ -142,7 +180,7 @@ function App() {
       <Layout>
         <Row align="middle">
           <Col span={10} offset={2}>
-            <h1>Our todolist</h1>
+            <h1>Our Inheritance List</h1>
           </Col>
           <Col span={12} style={{ textAlign: "right", paddingRight: "200px" }}>
             <WalletSelector />
@@ -171,7 +209,7 @@ function App() {
                 <Input
                   onChange={(event) => onWriteTask(event)} // add this
                   style={{ width: "calc(100% - 60px)" }}
-                  placeholder="Add a Task"
+                  placeholder="Add a Inheritance Address"
                   size="large"
                   value={newTask} // add this
                 />
@@ -187,24 +225,26 @@ function App() {
             <Col span={8} offset={8}>
               {tasks && (
                 <List
-                  size="small"
-                  bordered
-                  dataSource={tasks}
-                  renderItem={(task) => (
-                    <List.Item actions={[<Checkbox checked={task.completed} />]}>
-                      <List.Item.Meta
-                        title={task.content}
-                        description={
-                          <a
-                            href={`https://explorer.aptoslabs.com/account/${task.address}/`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >{`${task.address.slice(0, 6)}...${task.address.slice(-5)}`}</a>
-                        }
-                      />
-                    </List.Item>
-                  )}
-                />
+                size="small"
+                bordered
+                dataSource={tasks}
+                renderItem={(task) => (
+                  <List.Item 
+                    actions={[
+                      <Button 
+                        danger 
+                        onClick={() => onTaskDeleted(task.task_id)}
+                      >
+                        Delete
+                      </Button>
+                    ]}
+                  >
+                    <List.Item.Meta
+                      title={task.content}
+                    />
+                  </List.Item>
+                )}
+              />
               )}
             </Col>
           </Row>

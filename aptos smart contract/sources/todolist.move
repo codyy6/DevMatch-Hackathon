@@ -80,6 +80,24 @@ module todolist_addr::todolist {
         task_record.completed = true;
     }
 
+    public entry fun delete_task(account: &signer, task_id: u64) acquires TodoList {
+    // gets the signer address
+    let signer_address = signer::address_of(account);
+    assert!(exists<TodoList>(signer_address), E_NOT_INITIALIZED);
+    
+    // gets the TodoList resource
+    let todo_list = borrow_global_mut<TodoList>(signer_address);
+    
+    // assert task exists
+    assert!(table::contains(&todo_list.tasks, task_id), ETASK_DOESNT_EXIST);
+    
+    // removes the task from the tasks table
+    table::remove(&mut todo_list.tasks, task_id);
+    
+    // decrease the task counter
+    todo_list.task_counter = todo_list.task_counter - 1;
+}
+
     #[test(admin = @0x123)]
     public entry fun test_flow(admin: signer) acquires TodoList {
         // creates an admin @todolist_addr account for test

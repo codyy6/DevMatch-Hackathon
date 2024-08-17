@@ -39,12 +39,12 @@ async function createSmartContract() {
     }
 }
 
-async function mintCertificate(contractAddress, toWalletAddress) {
+async function mintCertificate(toWalletAddress) {
     try {
         const formData = new FormData();
         formData.append('wallet_address', '0x63A240cC61Ca328A5FD082E332e9495cb9c07DB5'); // Organisation wallet address
         formData.append('to', toWalletAddress);
-        formData.append('contract_address', contractAddress);
+        formData.append('contract_address', '0xa8fef73A9E3b3cfc5506c00aAcC6b35f8242aDeC');
         formData.append('file', new File([''], 'certificate.jpg')); // Replace with actual file input
         formData.append('name', 'NFT CERT');
         formData.append('description', 'NFT CERT');
@@ -94,10 +94,10 @@ function Landing() {
     }
   };
 
-  const handleMintClick = (contractAddress) => {
+  const handleMintClick = () => {
     const toWalletAddress = prompt('Enter the recipient wallet address:');
     if (toWalletAddress) {
-      mintCertificate(contractAddress, toWalletAddress);
+      mintCertificate(toWalletAddress);
     }
   };
 
@@ -107,13 +107,13 @@ function Landing() {
       <button onClick={handleFetchClick}>Fetch Smart Contracts</button>
       {error && <p>Error: {error.message}</p>}
       <ul>
-        {smartContracts.map(contract => (
+        {/* {smartContracts.map(contract => (
           <li key={contract.transactionHash}>
-            Transaction Hash: {contract.transactionHash}<br />
-            Contract Address: {contract.contract_address}<br />
-            <button onClick={() => handleMintClick(contract.contract_address)}>Mint Certificate</button>
-          </li>
-        ))}
+            Transaction Hash: {contract.transactionHash}<br /> */}
+            {/* Contract Address: {contract.contract_address}<br /> */}
+            <button onClick={() => handleMintClick()}>Mint Certificate</button>
+          {/* </li>
+        ))} */}
       </ul>
     </div>
   );
