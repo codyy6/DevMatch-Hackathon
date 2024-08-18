@@ -49,7 +49,6 @@ const status = "success";
 
 
 async function checkCertificate(from, to, contractAddress, status) {
-
   try {
     const response = await axios.get(`${API_URL}/api/certificate/get-certificate`, {
       params: {
@@ -64,19 +63,18 @@ async function checkCertificate(from, to, contractAddress, status) {
         "content-type": "application/json"
       }
     });
-
-    // Check if response and response.data are defined
-    if (response && response.data && response.data.result) {
-      // console.log('Certificate details:', response.data.result);
+    console.log('Certificate details:', response.data.result);
+    // Check if response and response.data are defined and if the result array has any items
+    if (response && response.data && response.data.result && response.data.result.length > 0) {
       console.log('Certificate details:', response.data.result.length);
-      return true; 
-      //meaning certificate already existed, so should show certificate already exist
+      return true; // Certificate exists
     } else {
-      return false;
-      // meaning dont have certificate and need show minting successful
+      console.log('No certificate found');
+      return false; // No certificate found
     }
   } catch (error) {
     console.error('Error fetching certificate details:', error.response ? error.response.data : error.message);
+    return false; // Default to false if there's an error
   }
 }
 
@@ -118,17 +116,26 @@ function Landing() {
   // };
 
 
-  const handleMintClick = () => {
-    
+  async function handleMintClick() {
     const toWalletAddress = prompt('Enter the recipient wallet address:');
-    if (toWalletAddress) {      
-      if (checkCertificate(from, toWalletAddress, contract_address, status)) {
-        console.log("Certificate already exist");
-        return;
+    
+    if (toWalletAddress) {
+      try {
+        // Await the result of checkCertificate
+        const certificateExists = await checkCertificate(from, toWalletAddress, contract_address, status);
+        
+        if (certificateExists) {
+          console.log("Certificate already exists");
+        } else {
+          await mintCertificate(toWalletAddress);
+          console.log("Minting successful");
+        }
+      } catch (error) {
+        console.error('Error during minting process:', error);
       }
-      mintCertificate(toWalletAddress);
     }
-  };
+  }
+  
 
   return (
     <div>
