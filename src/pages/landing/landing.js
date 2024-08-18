@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios'; // Import axios for making HTTP requests
+import { AnyPublicKey } from '@aptos-labs/ts-sdk';
 
 const API_URL = "https://service-testnet.maschain.com";
 const client_id = "2f865b0086add601eb6788d6a5e50d68a8abf8cf9607c9239669f5b1a529d14c";
 const client_secret = "sk_f7f377c5c2e1d3d795265fbde212f0276bd0509aba86178236c34ae7f9dcda08";
+
+const from = "0x63A240cC61Ca328A5FD082E332e9495cb9c07DB5";
+const contract_address = "0xa8fef73A9E3b3cfc5506c00aAcC6b35f8242aDeC";
+const status = "success";
+
 
 async function createSmartContract() {
     try {
@@ -13,8 +19,8 @@ async function createSmartContract() {
             "field": {
                 "wallet_address_owner": "0x63A240cC61Ca328A5FD082E332e9495cb9c07DB5", // Owner of the Certificate contract
                 "max_supply": 1000, // Maximum supply of certificates
-                "name": "Testing", // Name of the certificate
-                "symbol": "T1" // Certificate Symbol
+                "name": "Death Certificate", // Name of the certificate
+                "symbol": "DC" // Certificate Symbol
             },
             // "image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA...", // Optional image in base64 format
             // "callback_url": "https://your-callback-url.com" // Optional callback URL
@@ -39,6 +45,42 @@ async function createSmartContract() {
     }
 }
 
+async function getCertificate() {
+
+
+}
+
+
+async function checkCertificate(from, to, contractAddress, status) {
+
+  try {
+    const response = await axios.get(`${API_URL}/api/certificate/get-certificate`, {
+      params: {
+        from,
+        to,
+        contractAddress,
+        status
+      },
+      headers: {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "content-type": "application/json"
+      }
+    });
+
+    // Check if response and response.data are defined
+    if (response && response.data && response.data.result) {
+      // console.log('Certificate details:', response.data.result);
+      console.log('Certificate details:', response.data.result.length);
+      return true; 
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error('Error fetching certificate details:', error.response ? error.response.data : error.message);
+  }
+}
+
 async function mintCertificate(toWalletAddress) {
     try {
         const formData = new FormData();
@@ -58,8 +100,6 @@ async function mintCertificate(toWalletAddress) {
                 "content-type": "multipart/form-data"
             }
         });
-
-        console.log('Certificate minted:', response.data.result);
     } catch (error) {
         console.error('Error minting certificate:', error.response ? error.response.data : error.message);
     }
@@ -95,25 +135,32 @@ function Landing() {
   };
 
   const handleMintClick = () => {
+    
     const toWalletAddress = prompt('Enter the recipient wallet address:');
-    if (toWalletAddress) {
+    if (toWalletAddress) {      
+      if (checkCertificate(from, toWalletAddress, contract_address, status)) {
+        console.log("Certificate already exist");
+        return;
+      }
       mintCertificate(toWalletAddress);
     }
   };
 
   return (
-    <div>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       <button onClick={handleCreateClick}>Create Smart Contract</button>
       <button onClick={handleFetchClick}>Fetch Smart Contracts</button>
       {error && <p>Error: {error.message}</p>}
       <ul>
         {/* {smartContracts.map(contract => (
           <li key={contract.transactionHash}>
-            Transaction Hash: {contract.transactionHash}<br /> */}
-            {/* Contract Address: {contract.contract_address}<br /> */}
-            <button onClick={() => handleMintClick()}>Mint Certificate</button>
-          {/* </li>
-        ))} */}
+            Transaction Hash: {contract.transactionHash}<br /> 
+            Contract Address: {contract.contract_address}<br /> 
+            
+           </li>
+        ))}  */}
+        <button onClick={() => handleMintClick()}>Mint Certificate</button>
+        <button onClick={() => getCertificate()}>Check Certificate</button>
       </ul>
     </div>
   );
