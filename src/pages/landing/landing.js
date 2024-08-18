@@ -168,20 +168,8 @@ function Landing() {
     <div>
     <Navbar/>
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      {/* <button onClick={handleCreateClick}>Create Smart Contract</button>
-      <button onClick={handleFetchClick}>Fetch Smart Contracts</button> */}
-      {error && <p>Error: {error.message}</p>}
-      <ul>
-        {/* {smartContracts.map(contract => (
-          <li key={contract.transactionHash}>
-            Transaction Hash: {contract.transactionHash}<br /> 
-            Contract Address: {contract.contract_address}<br /> 
-            
-           </li>
-        ))}  */}
+
         <button onClick={() => handleMintClick()}>Mint Certificate</button>
-        <button onClick={() => getCertificate(from, contract_address, status)}>Check Certificate</button>
-      </ul>
     </div>
     </div>
   );
