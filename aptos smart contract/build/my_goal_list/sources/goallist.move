@@ -26,7 +26,7 @@ module goallist_addr::goallist {
         content: String,
         completed: bool,
         year: u64,
-        month: u64,
+        month: String,
     }
 
     public entry fun create_list(account: &signer){
@@ -40,7 +40,7 @@ module goallist_addr::goallist {
         move_to(account, goals_holder);
     }
 
-    public entry fun create_goal(account: &signer, content: String, year: u64, month: u64) acquires GoalList {
+    public entry fun create_goal(account: &signer, content: String, year: u64, month: String) acquires GoalList {
         // gets the signer address
         let signer_address = signer::address_of(account);
         
